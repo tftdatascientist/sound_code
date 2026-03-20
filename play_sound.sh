@@ -19,7 +19,8 @@ if [[ -f "$TEMP_FILE" ]]; then
     START=$(cat "$TEMP_FILE")
     NOW=$(date +%s)
     ELAPSED=$((NOW - START))
-    TONES=$(( ELAPSED / 15 + 1 ))
+    (( ELAPSED < 1 )) && ELAPSED=1
+    TONES=$(( (ELAPSED - 1) / 15 + 1 ))
 else
     TONES=1
 fi
