@@ -1,17 +1,19 @@
 #!/bin/bash
-# Setup helper for Sound Code + Notion integration
+# Interactive setup for Sound Code + Notion integration
 #
 # This script:
-# 1. Saves your Notion credentials
-# 2. Tests the connection
-# 3. Shows available melodies
-# 4. Explains the Notion database structure
+# 1. Collects Notion API key
+# 2. Creates the database automatically via API
+# 3. Pre-populates with all melody options
+# 4. Runs first sync
 #
 # Usage: setup_notion.sh
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 cat << 'BANNER'
 ╔══════════════════════════════════════════╗
-║     Sound Code - Notion Setup            ║
+║   🏒  Sound Code - Notion Setup  🏒     ║
 ╚══════════════════════════════════════════╝
 BANNER
 
@@ -20,8 +22,9 @@ echo "=== Step 1: Create Notion Integration ==="
 echo ""
 echo "1. Go to: https://www.notion.so/my-integrations"
 echo "2. Click '+ New integration'"
-echo "3. Name it 'Sound Code' (or whatever you like)"
-echo "4. Copy the 'Internal Integration Secret'"
+echo "3. Name it 'Sound Code'"
+echo "4. Capabilities: Read/Update/Insert content"
+echo "5. Copy the 'Internal Integration Secret'"
 echo ""
 
 read -p "Paste your Notion API key: " API_KEY
@@ -32,74 +35,45 @@ if [[ -z "$API_KEY" ]]; then
 fi
 
 echo ""
-echo "=== Step 2: Create Notion Database ==="
+echo "=== Step 2: Choose parent page ==="
 echo ""
-echo "Create a new database in Notion with these columns:"
+echo "The database will be created inside a Notion page."
 echo ""
-echo "  ┌────────────┬──────────┬─────────────────────────────┐"
-echo "  │ Event      │ Melody   │ Active                      │"
-echo "  │ (title)    │ (select) │ (checkbox)                  │"
-echo "  ├────────────┼──────────┼─────────────────────────────┤"
-echo "  │ stop       │ nhl_goal │ ☑                           │"
-echo "  │ start      │ (none)   │ ☐                           │"
-echo "  └────────────┴──────────┴─────────────────────────────┘"
+echo "1. Open (or create) a Notion page for Sound Code config"
+echo "2. Click '...' > 'Connections' > add your 'Sound Code' integration"
+echo "3. Copy the page URL"
 echo ""
-echo "Available melodies for the 'Melody' select column:"
-echo ""
-echo "  Classic:"
-echo "    ode_to_joy        - Beethoven, scales with work time"
-echo ""
-echo "  NHL Hockey:"
-echo "    nhl_goal_horn     - Goal horn + fanfare"
-echo "    nhl_charge        - Classic organ 'Charge!' riff"
-echo "    nhl_hat_trick     - 3x horn + victory fanfare"
-echo "    nhl_power_play    - Energetic ascending riff"
-echo "    nhl_overtime      - Dramatic build to climax"
-echo "    nhl_organ_lets_go - Arena 'Let's Go!' chant"
-echo ""
-echo "Then share the database with your 'Sound Code' integration"
-echo "(click '...' > 'Connections' > add your integration)"
+echo "The page ID is the 32-char hex at the end of the URL:"
+echo "  https://www.notion.so/My-Page-abc123def456..."
+echo "                                 ^^^^^^^^^^^^^^^^"
 echo ""
 
-read -p "Paste your Database ID (from URL): " DB_ID
+read -p "Paste the parent page ID (or full URL): " PAGE_INPUT
 
-if [[ -z "$DB_ID" ]]; then
-    echo "Error: Database ID cannot be empty."
+if [[ -z "$PAGE_INPUT" ]]; then
+    echo "Error: Page ID cannot be empty."
     exit 1
 fi
 
-# Clean up DB_ID (remove dashes if pasted from URL)
-DB_ID=$(echo "$DB_ID" | tr -d ' -')
+# Extract page ID from URL or raw input
+# Remove everything before the last dash-separated hex block, or just clean up
+PAGE_ID=$(echo "$PAGE_INPUT" | sed 's/.*-//' | sed 's/[?#].*//' | tr -d ' -')
+
+# If it's a full URL, the ID is the last 32 hex chars
+if [[ ${#PAGE_ID} -gt 32 ]]; then
+    PAGE_ID="${PAGE_ID: -32}"
+fi
 
 echo ""
-echo "=== Step 3: Testing connection... ==="
+echo "=== Step 3: Creating database... ==="
 echo ""
 
-# Save credentials
-CRED_FILE="$HOME/.claude_sound_notion"
-echo "NOTION_API_KEY=$API_KEY" > "$CRED_FILE"
-echo "NOTION_DB_ID=$DB_ID" >> "$CRED_FILE"
-chmod 600 "$CRED_FILE"
+bash "$SCRIPT_DIR/create_notion_db.sh" "$API_KEY" "$PAGE_ID"
 
-# Test connection
-RESPONSE=$(curl -s \
-    "https://api.notion.com/v1/databases/${DB_ID}" \
-    -H "Authorization: Bearer ${API_KEY}" \
-    -H "Notion-Version: 2022-06-28")
-
-if echo "$RESPONSE" | grep -q '"title"'; then
-    DB_TITLE=$(echo "$RESPONSE" | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-titles = data.get('title', [])
-print(titles[0]['plain_text'] if titles else 'Untitled')
-" 2>/dev/null)
-    echo "✓ Connected to database: $DB_TITLE"
-else
-    echo "✗ Connection failed. Check your API key and database ID."
-    echo "  Make sure you shared the database with your integration."
+if [[ $? -ne 0 ]]; then
     echo ""
-    echo "  Response: $(echo "$RESPONSE" | head -3)"
+    echo "Setup failed. Check your API key and page ID."
+    echo "Make sure the page is shared with your integration."
     exit 1
 fi
 
@@ -107,18 +81,26 @@ echo ""
 echo "=== Step 4: Initial sync ==="
 echo ""
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 bash "$SCRIPT_DIR/notion_sync.sh"
 
 echo ""
-echo "=== Setup complete! ==="
+echo "╔══════════════════════════════════════════╗"
+echo "║         Setup complete!                  ║"
+echo "╚══════════════════════════════════════════╝"
 echo ""
-echo "Credentials saved to: $CRED_FILE"
+echo "Available melodies:"
+echo "  ode_to_joy        Beethoven (scales with work time)"
+echo "  nhl_goal_horn     Goal horn + fanfare"
+echo "  nhl_charge        Organ 'Charge!' riff"
+echo "  nhl_hat_trick     3x horn + victory fanfare"
+echo "  nhl_power_play    Energetic ascending riff"
+echo "  nhl_overtime      Dramatic build to climax"
+echo "  nhl_organ_lets_go Arena 'Let's Go!' chant"
 echo ""
-echo "To change melodies:"
-echo "  1. Edit the Notion database (toggle Active, change Melody)"
-echo "  2. Run: bash notion_sync.sh"
+echo "To change melody:"
+echo "  1. Open the database in Notion"
+echo "  2. Uncheck current active melody"
+echo "  3. Check the one you want"
+echo "  4. Auto-syncs within 5 minutes (or run: bash notion_sync.sh)"
 echo ""
-echo "The sync will update the local config that play_sound.sh reads."
-echo "You can also add 'bash $(pwd)/notion_sync.sh' to a cron job"
-echo "or Claude Code hook for automatic syncing."
+echo "Test a melody now:  bash play_sound.sh nhl_goal_horn"

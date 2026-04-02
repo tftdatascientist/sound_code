@@ -30,16 +30,27 @@ Baza danych w Notion pozwala zdalnie konfigurować jaką melodię odtwarza każd
 ### Setup
 
 ```bash
-bash setup_notion.sh    # interaktywny kreator
+bash setup_notion.sh    # interaktywny kreator - tworzy bazę automatycznie
 # lub ręcznie:
-bash notion_sync.sh --setup <API_KEY> <DATABASE_ID>
+bash create_notion_db.sh <API_KEY> <PARENT_PAGE_ID>  # tworzy bazę
+bash notion_sync.sh --setup <API_KEY> <DATABASE_ID>  # tylko zapisuje credentials
 ```
 
 ### Synchronizacja
 
+Auto-sync wbudowany w `play_sound.sh` — odpytuje Notion co 5 minut (TTL cache).
+Ręczny sync:
+
 ```bash
 bash notion_sync.sh     # pobiera config z Notion do lokalnego cache'a
 ```
+
+### Zmiana melodii
+
+1. Otwórz bazę w Notion
+2. Odznacz aktualnie aktywną melodię (Active = off)
+3. Zaznacz nową (Active = on)
+4. Zmiana zadziała automatycznie w ciągu 5 minut (lub po `bash notion_sync.sh`)
 
 Cache zapisywany jest w `$TEMP/claude_sound_config` (format `event=melody`).
 
@@ -69,7 +80,8 @@ NHL melodies grają zawsze pełną frazę (nie skalują się z czasem pracy).
   - `play_sound.sh` (bez argumentów) — czyta config z cache'a, gra melodię
   - `play_sound.sh <melody_name>` — gra konkretną melodię
 - `notion_sync.sh` — synchronizuje konfigurację z Notion do lokalnego cache'a
-- `setup_notion.sh` — interaktywny kreator konfiguracji Notion
+- `create_notion_db.sh` — tworzy bazę danych w Notion przez API (z gotowymi opcjami)
+- `setup_notion.sh` — interaktywny kreator (prowadzi krok po kroku, wywołuje create_notion_db.sh)
 - `~/.claude/settings.json` — konfiguracja hooków (globalna)
 - `~/.claude_sound_notion` — dane dostępowe do Notion (chmod 600)
 - `$TEMP/claude_sound_config` — lokalny cache konfiguracji
@@ -79,3 +91,4 @@ NHL melodies grają zawsze pełną frazę (nie skalują się z czasem pracy).
 - **Interwał (ode_to_joy)** — 15s na nutę
 - **Melodie NHL** — zawsze grają pełną frazę, niezależnie od czasu pracy
 - **Częstotliwości/czasy** — definiowane w `case` w `play_sound.sh` (tablice FREQS, DURS, GAPS)
+- **Auto-sync TTL** — 300s (5 min), konfigurowalne w `play_sound.sh` (zmienna `SYNC_INTERVAL`)

@@ -12,12 +12,70 @@
 TEMP_DIR="${TEMP:-/tmp}"
 TEMP_FILE="$TEMP_DIR/claude_sound_start"
 CONFIG_FILE="$TEMP_DIR/claude_sound_config"
+CONFIG_TS_FILE="$TEMP_DIR/claude_sound_config_ts"
+CRED_FILE="$HOME/.claude_sound_notion"
+SYNC_INTERVAL=300  # auto-sync every 5 minutes
 
 # --- Save start timestamp ---
 if [[ "$1" == "start" ]]; then
     date +%s > "$TEMP_FILE"
     exit 0
 fi
+
+# --- Auto-sync from Notion (if credentials exist, cache expired) ---
+auto_sync_notion() {
+    # Skip if no credentials
+    [[ ! -f "$CRED_FILE" ]] && return
+
+    # Check cache age
+    local now
+    now=$(date +%s)
+    local last_sync=0
+    [[ -f "$CONFIG_TS_FILE" ]] && last_sync=$(cat "$CONFIG_TS_FILE" 2>/dev/null)
+    local age=$(( now - last_sync ))
+
+    # Skip if cache is fresh
+    (( age < SYNC_INTERVAL )) && return
+
+    # Source credentials
+    source "$CRED_FILE"
+    [[ -z "$NOTION_API_KEY" || -z "$NOTION_DB_ID" ]] && return
+
+    # Fetch from Notion (background-safe, timeout 5s)
+    local response
+    response=$(curl -s --max-time 5 -X POST \
+        "https://api.notion.com/v1/databases/${NOTION_DB_ID}/query" \
+        -H "Authorization: Bearer ${NOTION_API_KEY}" \
+        -H "Content-Type: application/json" \
+        -H "Notion-Version: 2022-06-28" \
+        -d '{"filter":{"property":"Active","checkbox":{"equals":true}}}' \
+        2>/dev/null) || return
+
+    # Parse and save config
+    local new_config
+    new_config=$(echo "$response" | python3 -c "
+import json, sys
+try:
+    data = json.load(sys.stdin)
+    for page in data.get('results', []):
+        props = page.get('properties', {})
+        t = props.get('Event', {}).get('title', [])
+        event = t[0]['plain_text'].strip().lower() if t else ''
+        s = props.get('Melody', {}).get('select')
+        melody = s['name'].strip().lower() if s else ''
+        if event and melody:
+            print(f'{event}={melody}')
+except:
+    pass
+" 2>/dev/null)
+
+    if [[ -n "$new_config" ]]; then
+        echo "$new_config" > "$CONFIG_FILE"
+        echo "$now" > "$CONFIG_TS_FILE"
+    fi
+}
+
+auto_sync_notion
 
 # --- Determine melody to play ---
 # Priority: 1) CLI argument  2) Notion config cache  3) default
