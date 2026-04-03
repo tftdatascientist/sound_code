@@ -1,6 +1,6 @@
 # Sound Code
 
-System alertów dźwiękowych informujących o oczekiwaniu na użytkownika w trakcie sesji Claude Code w terminalu VS Code.
+System alertów dźwiękowych i rejestr sesji Claude Code w Notion.
 
 ## Stack
 
@@ -30,10 +30,32 @@ Ostatnia nuta jest zawsze dłuższa (300ms vs 180ms) dla poczucia zakończenia.
 
 ## Pliki
 
-- `play_sound.sh` — jedyny skrypt, dwa tryby:
+- `play_sound.sh` — dźwięki, dwa tryby:
   - `play_sound.sh start` — zapisuje timestamp
   - `play_sound.sh` (bez argumentów) — oblicza czas i gra melodię
-- `~/.claude/settings.json` — konfiguracja hooków (globalna, działa we wszystkich projektach)
+- `notion_session_registry.sh` — status line + rejestr sesji w Notion
+- `~/.claude/settings.json` — konfiguracja hooków i status line (globalna)
+
+## Notion Session Registry
+
+Automatyczny rejestr sesji >100k tokenów w bazie [Rejestr CC](https://www.notion.so/2091eecaa19c45ed815b16a7dec3d173).
+
+**Mechanizm:** Status line Claude Code (jedyne miejsce z danymi o tokenach) uruchamia `notion_session_registry.sh` po każdej odpowiedzi asystenta:
+1. Parsuje JSON (tokeny, koszt, session_id)
+2. Wyświetla status: `125k tok | $0.45 | ctx 62%`
+3. Przy >= 100k tokenów → rejestruje sesję w Notion (curl w tle, jednokrotnie)
+
+**Deduplikacja:** Flag file `/tmp/claude_notion_registry/<session_id>.registered`
+
+**Wymagania:**
+- Notion Internal Integration Token w `~/.claude/.notion_api_key`
+- Baza udostępniona integracji (Connections → dodaj)
+- `jq`, `curl` w PATH
+
+**Konfiguracja w `~/.claude/settings.json`:**
+```json
+"statusLine": { "type": "command", "command": "~/.claude/notion_session_registry.sh" }
+```
 
 ## Parametry do strojenia
 
