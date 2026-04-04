@@ -39,7 +39,7 @@ if [[ "$TOTAL_TOKENS" -ge "$THRESHOLD" ]] && [[ ! -f "$FLAG_FILE" ]]; then
     mkdir -p "$FLAG_DIR"
     touch "$FLAG_FILE"
 
-    # Load API key
+    # Load API key: from env var (set in settings.json command) or from file
     NOTION_API_KEY="${NOTION_API_KEY:-}"
     if [[ -z "$NOTION_API_KEY" ]] && [[ -f "$HOME/.claude/.notion_api_key" ]]; then
         NOTION_API_KEY=$(cat "$HOME/.claude/.notion_api_key" 2>/dev/null)
