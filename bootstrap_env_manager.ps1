@@ -27,7 +27,7 @@ Desktopowa aplikacja Windows 11 do przegladania i edycji WSZYSTKICH lokalnych za
 
 ## Cel
 
-Uzytkownik (Slawek) ma rozproszone pliki konfiguracji, pamieci, regul, skilli, hookow i serwerow MCP w wielu lokalizacjach na dysku. Aplikacja ma je wszystkie wyswietlic w jednym oknie z drzewem nawigacji, edytorem z podswietlaniem skladni i podgladem mergeowanych ustawien.
+Uzytkownik (Sławek) ma rozproszone pliki konfiguracji, pamieci, regul, skilli, hookow i serwerow MCP w wielu lokalizacjach na dysku. Aplikacja ma je wszystkie wyswietlic w jednym oknie z drzewem nawigacji, edytorem z podswietlaniem skladni i podgladem mergeowanych ustawien.
 
 ## Stack
 
@@ -77,7 +77,7 @@ claude-env-manager/
 
 ## Zrodla danych - KOMPLETNA LISTA
 
-Aplikacja musi wykrywac i wyswietlac WSZYSTKIE ponizsze zasoby. Sciezki sa dla Windows 11, user `Slawek`.
+Aplikacja musi wykrywac i wyswietlac WSZYSTKIE ponizsze zasoby. Sciezki sa dla Windows 11, user `Sławek`.
 
 ### Poziom 1: MANAGED (read-only, najwyzszy priorytet)
 
@@ -90,14 +90,14 @@ Aplikacja musi wykrywac i wyswietlac WSZYSTKIE ponizsze zasoby. Sciezki sa dla W
 
 | Zasob | Sciezka | Format | Dane |
 |---|---|---|---|
-| Settings globalne | `C:\Users\Slawek\.claude\settings.json` | JSON | permissions, hooks, env, model, autoMemoryEnabled, theme, sandbox |
-| Settings lokalne | `C:\Users\Slawek\.claude\settings.local.json` | JSON | Nadpisania (wyzszy priorytet niz settings.json) |
-| Credentials | `C:\Users\Slawek\.claude\.credentials.json` | JSON | oauth tokens, api_key, provider - **MASKOWAC** |
-| CLAUDE.md osobisty | `C:\Users\Slawek\.claude\CLAUDE.md` | Markdown | Instrukcje ladowane na starcie kazdej sesji |
-| MCP serwery | `C:\Users\Slawek\.claude\.mcp.json` | JSON | mcpServers.{nazwa}.type/command/args/env/auth |
-| Reguly osobiste | `C:\Users\Slawek\.claude\rules\*.md` | Markdown | Pliki .md z opcjonalnym frontmatter `paths:` |
-| Skille | `C:\Users\Slawek\.claude\skills\*\SKILL.md` | Markdown | Frontmatter: title, description, trigger, permissions[], tools[], model |
-| Stan globalny | `C:\Users\Slawek\.claude.json` | JSON | theme, userId, lastLogin, mcpServers, keybindings |
+| Settings globalne | `C:\Users\Sławek\.claude\settings.json` | JSON | permissions, hooks, env, model, autoMemoryEnabled, theme, sandbox |
+| Settings lokalne | `C:\Users\Sławek\.claude\settings.local.json` | JSON | Nadpisania (wyzszy priorytet niz settings.json) |
+| Credentials | `C:\Users\Sławek\.claude\.credentials.json` | JSON | oauth tokens, api_key, provider - **MASKOWAC** |
+| CLAUDE.md osobisty | `C:\Users\Sławek\.claude\CLAUDE.md` | Markdown | Instrukcje ladowane na starcie kazdej sesji |
+| MCP serwery | `C:\Users\Sławek\.claude\.mcp.json` | JSON | mcpServers.{nazwa}.type/command/args/env/auth |
+| Reguly osobiste | `C:\Users\Sławek\.claude\rules\*.md` | Markdown | Pliki .md z opcjonalnym frontmatter `paths:` |
+| Skille | `C:\Users\Sławek\.claude\skills\*\SKILL.md` | Markdown | Frontmatter: title, description, trigger, permissions[], tools[], model |
+| Stan globalny | `C:\Users\Sławek\.claude.json` | JSON | theme, userId, lastLogin, mcpServers, keybindings |
 
 ### Poziom 3: PROJECT (per-projekt, wspoldzielone via git)
 
@@ -123,9 +123,9 @@ Dla KAZDEGO wykrytego projektu (katalogu z `.git/`):
 
 | Zasob | Sciezka | Format |
 |---|---|---|
-| Indeks pamieci | `C:\Users\Slawek\.claude\projects\<hash>\memory\MEMORY.md` | Markdown |
-| Pliki tematyczne | `C:\Users\Slawek\.claude\projects\<hash>\memory\*.md` | Markdown |
-| Pamiec subagentow | `C:\Users\Slawek\.claude\projects\<hash>\agents\<name>\memory\*.md` | Markdown |
+| Indeks pamieci | `C:\Users\Sławek\.claude\projects\<hash>\memory\MEMORY.md` | Markdown |
+| Pliki tematyczne | `C:\Users\Sławek\.claude\projects\<hash>\memory\*.md` | Markdown |
+| Pamiec subagentow | `C:\Users\Sławek\.claude\projects\<hash>\agents\<name>\memory\*.md` | Markdown |
 
 Hash projektu jest oparty o sciezke git repo. Wszystkie worktree wspoldziela pamiec.
 
@@ -133,9 +133,9 @@ Hash projektu jest oparty o sciezke git repo. Wszystkie worktree wspoldziela pam
 
 | Zasob | Sciezka | Format | Dane |
 |---|---|---|---|
-| Git config | `C:\Users\Slawek\.gitconfig` | INI-like | user.name, user.email, signingkey |
+| Git config | `C:\Users\Sławek\.gitconfig` | INI-like | user.name, user.email, signingkey |
 | VS Code settings | `%APPDATA%\Code\User\settings.json` | JSON | Rozszerzenia Claude, keybindings |
-| SSH keys | `C:\Users\Slawek\.ssh\` | Rozne | Klucze do podpisywania commitow |
+| SSH keys | `C:\Users\Sławek\.ssh\` | Rozne | Klucze do podpisywania commitow |
 | Zmienne srodowiskowe | System | - | ANTHROPIC_API_KEY, CLAUDE_CONFIG_DIR, CLAUDE_CODE_GIT_BASH_PATH itd. |
 
 ## Hierarchia priorytetow ustawien
@@ -317,7 +317,7 @@ Do wyswietlenia w sekcji "External":
 
 ## Uwagi implementacyjne
 
-- Na Windows `~` to `C:\Users\Slawek` - uzywaj `Path.home()`
+- Na Windows `~` to `C:\Users\Sławek` - uzywaj `Path.home()`
 - Hash projektu w `~/.claude/projects/<hash>/` - skanuj caly katalog `projects/`, nie probuj odgadywac hashy
 - Pliki `.local.json` i `CLAUDE.local.md` moga nie istniec - to normalne
 - `rules/` i `skills/` moga byc puste lub nie istniec
