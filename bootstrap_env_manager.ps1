@@ -325,20 +325,21 @@ Do wyswietlenia w sekcji "External":
 - `@sciezka/do/pliku` w CLAUDE.md to import (do 5 poziomow rekursji) - wyswietl jako link
 '@
 
-$claudeMd | Out-File -Encoding utf8NoBOM (Join-Path $ProjectDir "CLAUDE.md")
+[System.IO.File]::WriteAllText((Join-Path $ProjectDir "CLAUDE.md"), $claudeMd, [System.Text.UTF8Encoding]::new($false))
 Write-Host "CLAUDE.md zapisany" -ForegroundColor Green
 
 # 3. requirements.txt
-@"
+$reqTxt = @"
 PySide6>=6.7
 QScintilla>=2.14
 watchdog>=4.0
 pytest>=8.0
-"@ | Out-File -Encoding utf8NoBOM (Join-Path $ProjectDir "requirements.txt")
+"@
+[System.IO.File]::WriteAllText((Join-Path $ProjectDir "requirements.txt"), $reqTxt, [System.Text.UTF8Encoding]::new($false))
 Write-Host "requirements.txt zapisany" -ForegroundColor Green
 
 # 4. .gitignore
-@"
+$gitignore = @"
 __pycache__/
 *.pyc
 .venv/
@@ -348,7 +349,8 @@ build/
 *.spec
 *.bak
 .env
-"@ | Out-File -Encoding utf8NoBOM (Join-Path $ProjectDir ".gitignore")
+"@
+[System.IO.File]::WriteAllText((Join-Path $ProjectDir ".gitignore"), $gitignore, [System.Text.UTF8Encoding]::new($false))
 Write-Host ".gitignore zapisany" -ForegroundColor Green
 
 # 5. Git init + commit
