@@ -2,14 +2,75 @@
   "enabled": true,
   "sounds_dir": "sounds",
   "fallback_beep": true,
-  "volume": 100,
-  "mappings": {
-    "SessionStart":      { "file": "sc_terran_greetings.wav",    "enabled": true,  "label": "Start sesji (Terran: Greetings, Commander)" },
-    "UserPromptSubmit":  { "file": "wc_peon_zug_zug.wav",         "enabled": true,  "label": "Prompt wysłany (Peon: Zug zug)" },
-    "Notification":      { "file": "sc_nuclear_launch.wav",       "enabled": true,  "label": "Powiadomienie (SC: Nuclear launch detected)" },
-    "Stop":              { "file": "wc_peon_work_complete.wav",   "enabled": true,  "label": "Claude skończył (Peon: Work complete)" },
-    "SubagentStop":      { "file": "sc_mission_accomplished.wav", "enabled": true,  "label": "Subagent skończył (SC: Mission accomplished)" },
-    "PreCompact":        { "file": "sc_not_enough_minerals.wav",  "enabled": true,  "label": "Kompaktowanie kontekstu (SC: Not enough minerals)" },
-    "SessionEnd":        { "file": "wc_peasant_goodbye.wav",      "enabled": true,  "label": "Koniec sesji (Peasant: Goodbye)" }
+  "default_profile": "terran",
+  "hooks": [
+    "SessionStart",
+    "UserPromptSubmit",
+    "Notification",
+    "Stop",
+    "SubagentStop",
+    "PreCompact",
+    "SessionEnd"
+  ],
+  "profiles": {
+    "terran": {
+      "label": "Terran (Greetings, Commander)",
+      "subdir": "terran",
+      "hooks": {
+        "SessionStart":     true,
+        "UserPromptSubmit": true,
+        "Notification":     true,
+        "Stop":             true,
+        "SubagentStop":     true,
+        "PreCompact":       true,
+        "SessionEnd":       true
+      }
+    },
+    "protoss": {
+      "label": "Protoss (My life for Aiur)",
+      "subdir": "protoss",
+      "hooks": {
+        "SessionStart":     true,
+        "UserPromptSubmit": true,
+        "Notification":     true,
+        "Stop":             true,
+        "SubagentStop":     true,
+        "PreCompact":       true,
+        "SessionEnd":       true
+      }
+    },
+    "zerg": {
+      "label": "Zerg (We live for the Swarm)",
+      "subdir": "zerg",
+      "hooks": {
+        "SessionStart":     true,
+        "UserPromptSubmit": true,
+        "Notification":     true,
+        "Stop":             true,
+        "SubagentStop":     true,
+        "PreCompact":       true,
+        "SessionEnd":       true
+      }
+    },
+    "beep": {
+      "label": "Ode to Joy (beep fallback)",
+      "subdir": null,
+      "hooks": {
+        "SessionStart":     true,
+        "UserPromptSubmit": true,
+        "Notification":     true,
+        "Stop":             true,
+        "SubagentStop":     true,
+        "PreCompact":       true,
+        "SessionEnd":       true
+      }
+    }
+  },
+  "notion": {
+    "enabled": false,
+    "log_events": false,
+    "config_db_id": "",
+    "log_db_id": "",
+    "dashboard_page_id": ""
   }
 }
